@@ -13,6 +13,7 @@ All examples in this proposal are written in TypeScript.
   * [Example](#example)
   * [`ActivityContext`](#activitycontext)
   * [Registration](#registration)
+    * [Example](#example-1)
   * [Payloads](#payloads)
 * [Workflows](#workflows)
   * [Interface](#interface)
@@ -30,7 +31,7 @@ All examples in this proposal are written in TypeScript.
   * [Deterministic Time and Random](#deterministic-time-and-random)
   * [Error Handling](#error-handling)
   * [Cancellation](#cancellation)
-    * [Example](#example-1)
+    * [Example](#example-2)
     * [`CancellationScope.run()`](#cancellationscoperun)
   * [Long Histories](#long-histories)
 * [Project Structure](#project-structure)
@@ -80,8 +81,10 @@ export async httpGet(url: string): Promise<string> {
 ### Registration
 Activities are automatically registered by path when using the project initializer.
 
-If for any reason you need custom registration, you may do so using `worker.registerActivities`:
+If for any reason you need custom registration, you may do so using `worker.registerActivities`.
+Activities are registered by workflow import name, e.g. when an implementation for `@activities/greeter` is registered, all exported functions in the implementation are replaced by activity stubs when imported in the worker.
 
+#### Example
 ```ts
 // worker/run.ts
 import * as impl from './implementation/greeter'; // Non-standard path
@@ -293,6 +296,8 @@ In a workflow, handle activity cancallation by catching a `CancellationError` or
 #### Example
 ```ts
 // workflow/example.ts
+import { httpGet } from '@activities/http';
+
 async function main(urls: string[]) {
   const scope = new CancellationScope();
   const cancelableHttpGet = Context.activity(httpGet, { scope });
@@ -317,6 +322,8 @@ async function main(urls: string[]) {
 #### `CancellationScope.run()`
 ```ts
 // workflow/example.ts
+import { httpGet } from '@activities/http';
+
 async function main(urls: string[]) {
   let promises: Array<Promise<string>>;
   const scope = CancellationScope.run(() => {
